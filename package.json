@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "lightgal",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Easily create carousel galleries to better organize/view images in your Obsidian notes.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -19,10 +19,7 @@
 		"esbuild": "0.17.3",
 		"obsidian": "latest",
 		"tslib": "2.4.0",
-		"typescript": "4.7.4",
-		"@codemirror/language": "^6.10.2",
-		"@codemirror/state": "^6.4.1",
-		"@codemirror/view": "^6.28.1"
+		"typescript": "4.7.4"
 	},
 	"dependencies": {
 	}

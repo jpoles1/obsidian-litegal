@@ -7,8 +7,7 @@ export default class ImageCaptions extends Plugin {
   observer: MutationObserver
 
   async onload () {
-	const root_dir = this.app.vault.adapter.basePath//getResourcePath;
-	this.registerMarkdownCodeBlockProcessor("lightgal", async (source, el, ctx) => {
+	this.registerMarkdownCodeBlockProcessor("litegal", async (source, el, ctx) => {
 		let active_slide = 0;
 		let preview_scroll_speed = 0;
 
@@ -18,10 +17,10 @@ export default class ImageCaptions extends Plugin {
 		}
 		
 		const gallery = document.createElement('div')
-		gallery.classList.add('lightgal')
+		gallery.classList.add('litegal')
 
 		const active_image_container = document.createElement('div')
-		active_image_container.classList.add('lightgal-active')
+		active_image_container.classList.add('litegal-active')
 		gallery.appendChild(active_image_container)
 
 		const active_image = document.createElement('img')
@@ -29,8 +28,8 @@ export default class ImageCaptions extends Plugin {
 		active_image_container.appendChild(active_image)
 
 		const larrow = document.createElement('div')
-		larrow.classList.add('lightgal-arrow')
-		larrow.classList.add('lightgal-arrow-left')
+		larrow.classList.add('litegal-arrow')
+		larrow.classList.add('litegal-arrow-left')
 		larrow.innerHTML = '&lt;'
 		larrow.onclick = () => {
 			active_slide = (active_slide - 1 + image_list.length) % image_list.length
@@ -39,8 +38,8 @@ export default class ImageCaptions extends Plugin {
 		active_image_container.appendChild(larrow)
 
 		const rarrow = document.createElement('div')
-		rarrow.classList.add('lightgal-arrow')
-		rarrow.classList.add('lightgal-arrow-right')
+		rarrow.classList.add('litegal-arrow')
+		rarrow.classList.add('litegal-arrow-right')
 		rarrow.innerHTML = '&gt;'
 		rarrow.onclick = () => {
 			active_slide = (active_slide + 1) % image_list.length
@@ -49,12 +48,12 @@ export default class ImageCaptions extends Plugin {
 		active_image_container.appendChild(rarrow)
 
 		const preview_outer_container = document.createElement('div')
-		preview_outer_container.classList.add('lightgal-preview-outer')
+		preview_outer_container.classList.add('litegal-preview-outer')
 		gallery.appendChild(preview_outer_container)
 
 		const preview_larrow = document.createElement('div')
-		preview_larrow.classList.add('lightgal-arrow')
-		preview_larrow.classList.add('lightgal-arrow-left')
+		preview_larrow.classList.add('litegal-arrow')
+		preview_larrow.classList.add('litegal-arrow-left')
 		preview_larrow.innerHTML = '&lt;'
 		preview_larrow.onmouseenter = () => {
 			preview_scroll_speed = -5
@@ -65,8 +64,8 @@ export default class ImageCaptions extends Plugin {
 		preview_outer_container.appendChild(preview_larrow)
 
 		const preview_rarrow = document.createElement('div')
-		preview_rarrow.classList.add('lightgal-arrow')
-		preview_rarrow.classList.add('lightgal-arrow-right')
+		preview_rarrow.classList.add('litegal-arrow')
+		preview_rarrow.classList.add('litegal-arrow-right')
 		preview_rarrow.innerHTML = '&gt;'
 		preview_rarrow.onmouseenter = () => {
 			preview_scroll_speed = 5
@@ -77,7 +76,7 @@ export default class ImageCaptions extends Plugin {
 		preview_outer_container.appendChild(preview_rarrow)
 
 		const preview_container = document.createElement('div')
-		preview_container.classList.add('lightgal-preview')
+		preview_container.classList.add('litegal-preview')
 		preview_outer_container.appendChild(preview_container)
 		
 		setInterval(() => { 
@@ -89,7 +88,7 @@ export default class ImageCaptions extends Plugin {
 			console.log(await this.app.vault.adapter.exists(image))
 			const preview_elem = document.createElement('img')
 			preview_elem.src = `${image_path(image)}`
-			preview_elem.classList.add('lightgal-preview-img')
+			preview_elem.classList.add('litegal-preview-img')
 			preview_elem.onclick = () => {
 				active_slide = i
 				active_image.src = `${image_path(image_list[active_slide])}`

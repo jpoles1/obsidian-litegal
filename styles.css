@@ -6,14 +6,14 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
-.lightgal {
+.litegal {
     width: 100%;
     cursor: default;
 }
-.lightgal-preview-outer {
+.litegal-preview-outer {
     position: relative;
 }
-.lightgal-preview {
+.litegal-preview {
     display: flex;
     align-items: space-around;
     flex-wrap: nowrap;
@@ -21,7 +21,7 @@ If your plugin does not need CSS, delete this file.
     overflow: scroll;
 }
 
-.lightgal-preview-img {
+.litegal-preview-img {
     width: 100px;
     height: 100px;
     margin: 10px;
@@ -31,10 +31,10 @@ If your plugin does not need CSS, delete this file.
     cursor: pointer;
     flex-shrink: 0;
 }
-.lightgal-active {
+.litegal-active {
     position: relative;
 }
-.lightgal-arrow {
+.litegal-arrow {
     cursor: pointer;
     font-size: 30px;
     margin: 0 10px;
@@ -47,14 +47,14 @@ If your plugin does not need CSS, delete this file.
     transform: translate(0, -50%);
     user-select: none;
 }
-.lightgal-arrow:hover {
+.litegal-arrow:hover {
     color: white;
     background-color: rgba(0, 0, 0, 0.6);
 }
 
-.lightgal-preview-outer .lightgal-arrow {
+.litegal-preview-outer .litegal-arrow {
     font-size: 20px;
 }
-.lightgal-arrow-right {
+.litegal-arrow-right {
     right: 0;
 }
