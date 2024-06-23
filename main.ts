@@ -7,172 +7,101 @@ export default class ImageCaptions extends Plugin {
   observer: MutationObserver
 
   async onload () {
-    this.registerMarkdownPostProcessor(
-      externalImageProcessor(this)
-    )
+	const root_dir = this.app.vault.adapter.basePath//getResourcePath;
+	this.registerMarkdownCodeBlockProcessor("lightgal", async (source, el, ctx) => {
+		let active_slide = 0;
+		let preview_scroll_speed = 0;
 
-    this.observer = new MutationObserver((mutations: MutationRecord[]) => {
-      mutations.forEach((rec: MutationRecord) => {
-        if (rec.type === 'childList') {
-			(<Element>rec.target).querySelectorAll('.HyperMD-quote:has(> .image-embed)')
-			.forEach(async (gallery_block) => {
-				const img_list: HTMLElement[] = [];
-				const fig_list: HTMLElement[] = [];
-				gallery_block.querySelectorAll(".image-embed")
-				.forEach(async imageEmbedContainer => {
-					const img = imageEmbedContainer.querySelector('img,figure')
-					const width = imageEmbedContainer.getAttribute('width') || ''
-					const captionText = `${Date.now()}`
-
-					if (!img) return
-					img_list.push(img)
-					const figure = imageEmbedContainer.querySelector('figure')
-					fig_list.push(figure!)
-					const figCaption = imageEmbedContainer.querySelector('figcaption')
-					if (figure || img.parentElement?.nodeName === 'FIGURE') {
-						// Node has already been processed
-						// Check if the text needs to be updated
-						if (figCaption && captionText) {
-						// Update the text in the existing element
-						const children = await renderMarkdown(captionText, '', this) ?? [captionText]
-						figCaption.replaceChildren(...children)
-						} else if (!captionText) {
-						// The alt-text has been removed, so remove the custom <figure> element
-						// and set it back to how it was originally with just the plain <img> element
-						imageEmbedContainer.appendChild(img)
-						figure?.remove()
-						}
-					} else {
-						if (captionText && captionText !== imageEmbedContainer.getAttribute('src')) {
-						await insertFigureWithCaption(img, imageEmbedContainer, captionText, '', this)
-						}
-					}
-					if (width) {
-						// Update the image width, if specified
-						img.setAttribute('width', width)
-					} else {
-						// It's critical to remove the empty width attribute, rather than setting it to ""
-						img.removeAttribute('width')
-					}
-				})
-				if (fig_list.length > 0) {
-					await insertGallery(gallery_block, fig_list)
-				}
-			})
+		const image_list = source.split('\n').map((line) => line.replace("[[", "").replace("]]", "").trim()).filter((line) => line)
+		const image_path = (image_name: string): string => {
+			return this.app.vault.adapter.getResourcePath(image_name)
 		}
-      })
-    })
-    this.observer.observe(document.body, { subtree: true, childList: true })
+		
+		const gallery = document.createElement('div')
+		gallery.classList.add('lightgal')
+
+		const active_image_container = document.createElement('div')
+		active_image_container.classList.add('lightgal-active')
+		gallery.appendChild(active_image_container)
+
+		const active_image = document.createElement('img')
+		active_image.src = `${image_path(image_list[active_slide])}`
+		active_image_container.appendChild(active_image)
+
+		const larrow = document.createElement('div')
+		larrow.classList.add('lightgal-arrow')
+		larrow.classList.add('lightgal-arrow-left')
+		larrow.innerHTML = '&lt;'
+		larrow.onclick = () => {
+			active_slide = (active_slide - 1 + image_list.length) % image_list.length
+			active_image.src = `${image_path(image_list[active_slide])}`
+		}
+		active_image_container.appendChild(larrow)
+
+		const rarrow = document.createElement('div')
+		rarrow.classList.add('lightgal-arrow')
+		rarrow.classList.add('lightgal-arrow-right')
+		rarrow.innerHTML = '&gt;'
+		rarrow.onclick = () => {
+			active_slide = (active_slide + 1) % image_list.length
+			active_image.src = `${image_path(image_list[active_slide])}`
+		}
+		active_image_container.appendChild(rarrow)
+
+		const preview_outer_container = document.createElement('div')
+		preview_outer_container.classList.add('lightgal-preview-outer')
+		gallery.appendChild(preview_outer_container)
+
+		const preview_larrow = document.createElement('div')
+		preview_larrow.classList.add('lightgal-arrow')
+		preview_larrow.classList.add('lightgal-arrow-left')
+		preview_larrow.innerHTML = '&lt;'
+		preview_larrow.onmouseenter = () => {
+			preview_scroll_speed = -5
+		}
+		preview_larrow.onmouseleave = () => {
+			preview_scroll_speed = 0
+		}
+		preview_outer_container.appendChild(preview_larrow)
+
+		const preview_rarrow = document.createElement('div')
+		preview_rarrow.classList.add('lightgal-arrow')
+		preview_rarrow.classList.add('lightgal-arrow-right')
+		preview_rarrow.innerHTML = '&gt;'
+		preview_rarrow.onmouseenter = () => {
+			preview_scroll_speed = 5
+		}
+		preview_rarrow.onmouseleave = () => {
+			preview_scroll_speed = 0
+		}
+		preview_outer_container.appendChild(preview_rarrow)
+
+		const preview_container = document.createElement('div')
+		preview_container.classList.add('lightgal-preview')
+		preview_outer_container.appendChild(preview_container)
+		
+		setInterval(() => { 
+			preview_container.scrollLeft += preview_scroll_speed
+		}, 10)
+
+
+		image_list.forEach(async (image, i) => {
+			console.log(await this.app.vault.adapter.exists(image))
+			const preview_elem = document.createElement('img')
+			preview_elem.src = `${image_path(image)}`
+			preview_elem.classList.add('lightgal-preview-img')
+			preview_elem.onclick = () => {
+				active_slide = i
+				active_image.src = `${image_path(image_list[active_slide])}`
+			}
+			preview_container.appendChild(preview_elem)
+		})
+		console.log(this.app.vault)
+		el.appendChild(gallery)
+	})
   }
 
   onunload () {
-    this.observer.disconnect()
-  }
-}
-
-function insertGallery(gallery_container: HTMLElement | Element, image_list: HTMLElement[]) {
-	const gal = gallery_container.createEl('picture')
-	gal.addClass('image-gal')
-	console.log("list", image_list)
-	const left_arrow = gal.createEl('div')
-	left_arrow.innerHTML = '<div style="font-size: 200%"><</div>'
-
-	for (const img of image_list) {
-		gal.appendChild(img)
-	}
-	console.log(gal)
-}
-
-/**
- * Process an HTMLElement or Element to extract the caption text
- * from the alt attribute.
- *
- * Optionally use the image filename if the filenamePlaceholder is specified.
- *
- * @param img
- */
-function getCaptionText (img: HTMLElement | Element) {
-  let captionText = img.getAttribute('alt') || ''
-  const src = img.getAttribute('src') || ''
-  if (captionText === src) {
-    // If no caption is specified, then Obsidian puts the src in the alt attribute
-    captionText = ''
-  } else if (captionText === filenamePlaceholder) {
-    // Optionally use filename as caption text if the placeholder is used
-    const match = src.match(/[^\\/]+(?=\.\w+$)|[^\\/]+$/)
-    if (match?.[0]) {
-      captionText = match[0]
-    }
-  } else if (captionText === filenameExtensionPlaceholder) {
-    // Optionally use filename (including extension) as caption text if the placeholder is used
-    const match = src.match(/[^\\/]+$/)
-    if (match?.[0]) {
-      captionText = match[0]
-    }
-  } else if (captionText === '\\' + filenamePlaceholder) {
-    // Remove the escaping to allow the placeholder to be used verbatim
-    captionText = filenamePlaceholder
-  }
-  captionText = captionText.replace(/<<(.*?)>>/g, (match, linktext) => {
-    return '[[' + linktext + ']]'
-  })
-  return captionText
-}
-
-/**
- * External images can be processed with a Markdown Post Processor, but only in Reading View.
- */
-function externalImageProcessor (plugin: ImageCaptions): MarkdownPostProcessor {
-  return (el, ctx) => {
-    el.findAll('img:not(.emoji)')
-      .forEach(async img => {
-        const captionText = getCaptionText(img)
-        const parent = img.parentElement
-        if (parent && parent?.nodeName !== 'FIGURE' && captionText && captionText !== img.getAttribute('src')) {
-          await insertFigureWithCaption(img, parent, captionText, ctx.sourcePath, plugin)
-        }
-      })
-  }
-}
-
-/**
- * Replace the original <img> element with this structure:
- * @example
- * <figure>
- *   <img>
- *   <figcaption>The caption text</figcaption>
- * </figure>
- *
- * @param {HTMLElement} imageEl - The original image element to insert inside the <figure>
- * @param {HTMLElement|Element} outerEl - Most likely the parent of the original <img>
- * @param captionText
- * @param sourcePath
- * @param plugin
- */
-async function insertFigureWithCaption (imageEl: HTMLElement, outerEl: HTMLElement | Element, captionText: string, sourcePath: string, plugin: ImageCaptions) {
-  const figure = outerEl.createEl('figure')
-  figure.addClass('image-captions-figure')
-  figure.appendChild(imageEl)
-  const children = await renderMarkdown(captionText, sourcePath, plugin) ?? [captionText]
-  figure.createEl('figcaption', {
-    cls: 'image-captions-caption'
-  }).replaceChildren(...children)
-}
-
-/**
- * Easy-to-use version of MarkdownRenderer.renderMarkdown. Returns only the child nodes, rather than a container block.
- * @param markdown
- * @param sourcePath
- * @param component - Typically you can just pass the plugin instance, but Liam from the Obsidian team says
- *   it's not a good practice (https://github.com/obsidianmd/obsidian-releases/pull/2263#issuecomment-1711864829).
- *   I'm currently struggling to find a proper way to do it.
- */
-export async function renderMarkdown (markdown: string, sourcePath: string, component: Component): Promise<NodeList | undefined> {
-  const el = createDiv()
-  await MarkdownRenderer.renderMarkdown(markdown, el, sourcePath, component)
-  for (const child of el.children) {
-    if (child.tagName.toLowerCase() === 'p') {
-      return child.childNodes
-    }
+	//this.observer.disconnect()
   }
 }

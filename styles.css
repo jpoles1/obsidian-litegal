@@ -6,3 +6,55 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+.lightgal {
+    width: 100%;
+    cursor: default;
+}
+.lightgal-preview-outer {
+    position: relative;
+}
+.lightgal-preview {
+    display: flex;
+    align-items: space-around;
+    flex-wrap: nowrap;
+    margin: 0 30px 0 40px;
+    overflow: scroll;
+}
+
+.lightgal-preview-img {
+    width: 100px;
+    height: 100px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    overflow: hidden;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.lightgal-active {
+    position: relative;
+}
+.lightgal-arrow {
+    cursor: pointer;
+    font-size: 30px;
+    margin: 0 10px;
+    color: #999;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    top: 50%;
+    transform: translate(0, -50%);
+    user-select: none;
+}
+.lightgal-arrow:hover {
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.lightgal-preview-outer .lightgal-arrow {
+    font-size: 20px;
+}
+.lightgal-arrow-right {
+    right: 0;
+}
