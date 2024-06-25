@@ -1,128 +1,157 @@
 import { Component, MarkdownPostProcessor, MarkdownRenderer, Plugin } from 'obsidian'
+import { LiteGallerySettingTab } from './settingtab'
+import { exists } from 'fs';
 
-const filenamePlaceholder = '%'
-const filenameExtensionPlaceholder = '%.%'
+interface LiteGallerySettings {
+	image_folders: string[];
+}
 
-export default class ImageCaptions extends Plugin {
-  observer: MutationObserver
+const DEFAULT_SETTINGS: Partial<LiteGallerySettings> = {
+	image_folders: [],
+};
 
-  async onload () {
-	this.registerMarkdownCodeBlockProcessor("litegal", async (source, el, ctx) => {
-		// Define variables for tracking the active slide and preview scroll speed
-		let active_slide = 0;
-		let preview_scroll_speed = 0;
-		
-		// Split the source into lines, remove brackets and whitespace, and filter out empty lines
-		const image_list = source.split('\n').map((line) => line.replace("[[", "").replace("]]", "").trim()).filter((line) => line)
-		
-		// Function to get the resource path of an image
-		const image_path = (image_name: string): string => {
-			return this.app.vault.adapter.getResourcePath(image_name)
-		}
-		
-		// Create the gallery container
-		const gallery = document.createElement('div')
-		gallery.classList.add('litegal')
+export default class LiteGallery extends Plugin {
+	settings: LiteGallerySettings;
 
-		// Create the container for the active image
-		const active_image_container = document.createElement('div')
-		active_image_container.classList.add('litegal-active')
-		gallery.appendChild(active_image_container)
+	async load_settings() {
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+	}
 
-		// Create the active image element and set its source to the first image in the list
-		const active_image = document.createElement('img')
-		active_image.src = `${image_path(image_list[active_slide])}`
-		active_image_container.appendChild(active_image)
+	async save_settings() {
+		await this.saveData(this.settings);
+	}
+	
+	async onload () {
+		await this.load_settings();
 
-		// Create the left arrow element and handle click event to navigate to the previous image
-		const larrow = document.createElement('div')
-		larrow.classList.add('litegal-arrow')
-		larrow.classList.add('litegal-arrow-left')
-		larrow.innerHTML = '&lt;'
-		larrow.onclick = () => {
-			active_slide = (active_slide - 1 + image_list.length) % image_list.length
-			active_image.src = `${image_path(image_list[active_slide])}`
-		}
-		active_image_container.appendChild(larrow)
+		this.addSettingTab(new LiteGallerySettingTab(this.app, this));
 
-		// Create the right arrow element and handle click event to navigate to the next image
-		const rarrow = document.createElement('div')
-		rarrow.classList.add('litegal-arrow')
-		rarrow.classList.add('litegal-arrow-right')
-		rarrow.innerHTML = '&gt;'
-		rarrow.onclick = () => {
-			active_slide = (active_slide + 1) % image_list.length
-			active_image.src = `${image_path(image_list[active_slide])}`
-		}
-		active_image_container.appendChild(rarrow)
-
-		// Create the container for the preview section
-		const preview_outer_container = document.createElement('div')
-		preview_outer_container.classList.add('litegal-preview-outer')
-		gallery.appendChild(preview_outer_container)
-
-		// Create the left arrow element for preview scrolling and handle mouse events to control scroll speed
-		const preview_larrow = document.createElement('div')
-		preview_larrow.classList.add('litegal-arrow')
-		preview_larrow.classList.add('litegal-arrow-left')
-		preview_larrow.innerHTML = '&lt;'
-		preview_larrow.onmouseenter = () => {
-			preview_scroll_speed = -5
-		}
-		preview_larrow.onmouseleave = () => {
-			preview_scroll_speed = 0
-		}
-		preview_outer_container.appendChild(preview_larrow)
-
-		// Create the right arrow element for preview scrolling and handle mouse events to control scroll speed
-		const preview_rarrow = document.createElement('div')
-		preview_rarrow.classList.add('litegal-arrow')
-		preview_rarrow.classList.add('litegal-arrow-right')
-		preview_rarrow.innerHTML = '&gt;'
-		preview_rarrow.onmouseenter = () => {
-			preview_scroll_speed = 5
-		}
-		preview_rarrow.onmouseleave = () => {
-			preview_scroll_speed = 0
-		}
-		preview_outer_container.appendChild(preview_rarrow)
-
-		// Create the container for the preview images
-		const preview_container = document.createElement('div')
-		preview_container.classList.add('litegal-preview')
-		preview_outer_container.appendChild(preview_container)
-		
-		// Set up interval to continuously scroll the preview images based on the scroll speed
-		setInterval(() => { 
-			preview_container.scrollLeft += preview_scroll_speed
-		}, 10)
-
-		// Iterate over the image list and create preview elements for each image
-		image_list.forEach(async (image, i) => {
-			// Check if the image exists in the vault
-			console.log(await this.app.vault.adapter.exists(image))
+		this.registerMarkdownCodeBlockProcessor("litegal", async (source, el, ctx) => {
+			// Define variables for tracking the active slide and preview scroll speed
+			let active_slide = 0;
+			let preview_scroll_speed = 0;
 			
-			// Create the preview image element and set its source to the corresponding image in the list
-			const preview_elem = document.createElement('img')
-			preview_elem.src = `${image_path(image)}`
-			preview_elem.classList.add('litegal-preview-img')
-			
-			// Handle click event to set the active slide and update the active image
-			preview_elem.onclick = () => {
-				active_slide = i
-				active_image.src = `${image_path(image_list[active_slide])}`
+			// Split the source into lines, remove brackets and whitespace, and filter out empty lines
+			const image_list = (await Promise.all(
+				source.split('\n')
+				.map((line) => line.replace("[[", "").replace("]]", "").trim())
+				.filter((line) => line)
+				.map(async (image) => {
+					// Check if the image exists in any of the folders specified in settings and return the path if it does, otherwise return undefined
+					let image_exists = false
+					let image_path = undefined
+					let path_options = this.settings.image_folders.map ((folder) => { return `${folder}/${image}` })
+					for (const test_path of path_options) {
+						if (await this.app.vault.adapter.exists(test_path)) {
+							image_exists = true
+							image_path = this.app.vault.adapter.getResourcePath(test_path)
+							break
+						}
+					}
+					return image_path
+				}
+			))).filter((image_path) => image_path !== undefined) as string[]
+		
+			// Create the gallery container
+			const gallery = document.createElement('div')
+			gallery.classList.add('litegal')
+
+			// Create the container for the active image
+			const active_image_container = document.createElement('div')
+			active_image_container.classList.add('litegal-active')
+			gallery.appendChild(active_image_container)
+
+			// Create the active image element and set its source to the first image in the list
+			const active_image = document.createElement('img')
+			active_image.src = image_list[active_slide]
+			active_image_container.appendChild(active_image)
+
+			// Create the left arrow element and handle click event to navigate to the previous image
+			const larrow = document.createElement('div')
+			larrow.classList.add('litegal-arrow')
+			larrow.classList.add('litegal-arrow-left')
+			larrow.innerHTML = '&lt;'
+			larrow.onclick = () => {
+				active_slide = (active_slide - 1 + image_list.length) % image_list.length
+				active_image.src = image_list[active_slide]
 			}
-			
-			// Append the preview element to the preview container
-			preview_container.appendChild(preview_elem)
-		})
-		
-		// Append the gallery to the provided element
-		el.appendChild(gallery)
-	})
-  }
+			active_image_container.appendChild(larrow)
 
-  onunload () {
+			// Create the right arrow element and handle click event to navigate to the next image
+			const rarrow = document.createElement('div')
+			rarrow.classList.add('litegal-arrow')
+			rarrow.classList.add('litegal-arrow-right')
+			rarrow.innerHTML = '&gt;'
+			rarrow.onclick = () => {
+				active_slide = (active_slide + 1) % image_list.length
+				active_image.src = image_list[active_slide]
+			}
+			active_image_container.appendChild(rarrow)
+
+			// Create the container for the preview section
+			const preview_outer_container = document.createElement('div')
+			preview_outer_container.classList.add('litegal-preview-outer')
+			gallery.appendChild(preview_outer_container)
+
+			// Create the left arrow element for preview scrolling and handle mouse events to control scroll speed
+			const preview_larrow = document.createElement('div')
+			preview_larrow.classList.add('litegal-arrow')
+			preview_larrow.classList.add('litegal-arrow-left')
+			preview_larrow.innerHTML = '&lt;'
+			preview_larrow.onmouseenter = () => {
+				preview_scroll_speed = -5
+			}
+			preview_larrow.onmouseleave = () => {
+				preview_scroll_speed = 0
+			}
+			preview_outer_container.appendChild(preview_larrow)
+
+			// Create the right arrow element for preview scrolling and handle mouse events to control scroll speed
+			const preview_rarrow = document.createElement('div')
+			preview_rarrow.classList.add('litegal-arrow')
+			preview_rarrow.classList.add('litegal-arrow-right')
+			preview_rarrow.innerHTML = '&gt;'
+			preview_rarrow.onmouseenter = () => {
+				preview_scroll_speed = 5
+			}
+			preview_rarrow.onmouseleave = () => {
+				preview_scroll_speed = 0
+			}
+			preview_outer_container.appendChild(preview_rarrow)
+
+			// Create the container for the preview images
+			const preview_container = document.createElement('div')
+			preview_container.classList.add('litegal-preview')
+			preview_outer_container.appendChild(preview_container)
+			
+			// Set up interval to continuously scroll the preview images based on the scroll speed
+			setInterval(() => { 
+				preview_container.scrollLeft += preview_scroll_speed
+			}, 10)
+
+			// Iterate over the image list and create preview elements for each image
+			image_list.forEach(async (image_path: string, i) => {				
+				// Create the preview image element and set its source to the corresponding image in the list
+				const preview_elem = document.createElement('img')
+				preview_elem.src = image_path
+				preview_elem.classList.add('litegal-preview-img')
+				
+				// Handle click event to set the active slide and update the active image
+				preview_elem.onclick = () => {
+					active_slide = i
+					active_image.src = `${image_list[active_slide]}`
+				}
+				
+				// Append the preview element to the preview container
+				preview_container.appendChild(preview_elem)
+			})
+			
+			// Append the gallery to the provided element
+			el.appendChild(gallery)
+		})
+	}
+
+	onunload () {
 	//this.observer.disconnect()
-  }
+	}
 }
