@@ -52,6 +52,67 @@ export default class LiteGallery extends Plugin {
 				}
 			))).filter((image_path) => image_path !== undefined) as string[]
 		
+			// Create the lightbox container
+			const lightbox_container = document.createElement('div')
+			lightbox_container.classList.add('litegal-lightbox-container')
+			document.body.appendChild(lightbox_container)
+			lightbox_container.onclick = () => {
+				lightbox_container.style.display = 'none' // Hide the lightbox when clicking outside of the image
+			}
+			
+			// Create the lightbox element and handle click events to prevent closing the lightbox when clicking on the image
+			const lightbox = document.createElement('div')
+			lightbox.classList.add('litegal-lightbox')
+			lightbox_container.appendChild(lightbox)
+			lightbox.onclick = (event) => {
+				event.stopPropagation()
+			}
+
+			// Create the left arrow element for the lightbox and handle click event to navigate to the previous
+			const lightbox_larrow = document.createElement('div')
+			lightbox_larrow.classList.add('litegal-arrow')
+			lightbox_larrow.classList.add('litegal-arrow-left')
+			lightbox_larrow.innerHTML = '&lt;'
+			lightbox_larrow.onclick = () => {
+				active_slide = (active_slide - 1 + image_list.length) % image_list.length
+				lightbox_image.src = image_list[active_slide]
+				active_image.src = image_list[active_slide]
+			}
+			lightbox.appendChild(lightbox_larrow)
+
+			// Create the right arrow element for the lightbox and handle click event to navigate to the next
+			const lightbox_rarrow = document.createElement('div')
+			lightbox_rarrow.classList.add('litegal-arrow')
+			lightbox_rarrow.classList.add('litegal-arrow-right')
+			lightbox_rarrow.innerHTML = '&gt;'
+			lightbox_rarrow.onclick = () => {
+				active_slide = (active_slide + 1) % image_list.length
+				lightbox_image.src = image_list[active_slide]
+				active_image.src = image_list[active_slide]
+			}
+			lightbox.appendChild(lightbox_rarrow)
+
+			// Create the image element for the lightbox
+			const lightbox_image = document.createElement('img')
+			lightbox_image.classList.add('litegal-lightbox-image')
+			lightbox.appendChild(lightbox_image)
+
+			// Create the exit element for the lightbox and handle click event to close the lightbox
+			const lightbox_exit = document.createElement('div')
+			lightbox_exit.classList.add('litegal-lightbox-exit')
+			lightbox_exit.innerHTML = '&times;'
+			lightbox_exit.onclick = () => {
+				lightbox_container.style.display = 'none'
+			}
+			lightbox.appendChild(lightbox_exit)
+
+			// Close the lightbox when pressing the escape key
+			document.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape') {
+					lightbox_container.style.display = 'none'
+				}
+			})
+
 			// Create the gallery container
 			const gallery = document.createElement('div')
 			gallery.classList.add('litegal')
@@ -65,6 +126,11 @@ export default class LiteGallery extends Plugin {
 			const active_image = document.createElement('img')
 			active_image.src = image_list[active_slide]
 			active_image_container.appendChild(active_image)
+
+			active_image.onclick = () => {
+				lightbox_container.style.display = 'block'
+				lightbox_image.src = image_list[active_slide]
+			}
 
 			// Create the left arrow element and handle click event to navigate to the previous image
 			const larrow = document.createElement('div')
@@ -148,6 +214,7 @@ export default class LiteGallery extends Plugin {
 			
 			// Append the gallery to the provided element
 			el.appendChild(gallery)
+
 		})
 	}
 

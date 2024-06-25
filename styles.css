@@ -58,3 +58,41 @@ If your plugin does not need CSS, delete this file.
 .litegal-arrow-right {
     right: 0;
 }
+
+.litegal-lightbox-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    cursor: pointer;
+}
+.litegal-lightbox {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90%;
+    max-height: 90%;
+    overflow: hidden;
+    border-radius: 5px;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.litegal-lightbox-exit {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 30px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-bottom-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 5px;
+    cursor: pointer;
+    user-select: none;
+}
