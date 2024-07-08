@@ -1,4 +1,4 @@
-import { Component, MarkdownPostProcessor, MarkdownRenderer, Plugin } from 'obsidian'
+import { Component, MarkdownPostProcessor, MarkdownRenderer, Plugin, Notice } from 'obsidian'
 import { LiteGallerySettingTab } from './settingtab'
 import { exists } from 'fs';
 
@@ -47,6 +47,11 @@ export default class LiteGallery extends Plugin {
 							image_path = this.app.vault.adapter.getResourcePath(test_path)
 							break
 						}
+					}
+					if (image_path == undefined) {
+						//new Notification("LiteGallery: Image not found", {body: image})
+						//alert(`LiteGallery: Image not found: ${image}`)
+						new Notice(`LiteGallery: Image not found: ${image}`)
 					}
 					return image_path
 				}
