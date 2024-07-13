@@ -62,7 +62,7 @@ export default class LiteGallery extends Plugin {
 			lightbox_container.classList.add('litegal-lightbox-container')
 			document.body.appendChild(lightbox_container)
 			lightbox_container.onclick = () => {
-				lightbox_container.style.display = 'none' // Hide the lightbox when clicking outside of the image
+				lightbox_container.addClass('hidden') // Hide the lightbox when clicking outside of the image
 			}
 			
 			// Create the lightbox element and handle click events to prevent closing the lightbox when clicking on the image
@@ -74,10 +74,10 @@ export default class LiteGallery extends Plugin {
 			}
 
 			// Create the left arrow element for the lightbox and handle click event to navigate to the previous
-			const lightbox_larrow = document.createElement('div')
-			lightbox_larrow.classList.add('litegal-arrow')
-			lightbox_larrow.classList.add('litegal-arrow-left')
-			lightbox_larrow.innerHTML = '&lt;'
+			const lightbox_larrow = document.createEl('div', { 
+				text: '&lt;', 
+				cls: 'litegal-arrow litegal-arrow-left' 
+			})
 			lightbox_larrow.onclick = () => {
 				active_slide = (active_slide - 1 + image_list.length) % image_list.length
 				lightbox_image.src = image_list[active_slide]
@@ -86,10 +86,10 @@ export default class LiteGallery extends Plugin {
 			lightbox.appendChild(lightbox_larrow)
 
 			// Create the right arrow element for the lightbox and handle click event to navigate to the next
-			const lightbox_rarrow = document.createElement('div')
-			lightbox_rarrow.classList.add('litegal-arrow')
-			lightbox_rarrow.classList.add('litegal-arrow-right')
-			lightbox_rarrow.innerHTML = '&gt;'
+			const lightbox_rarrow = document.createEl('div', {
+				text: '&gt;',
+				cls: 'litegal-arrow litegal-arrow-right'
+			})
 			lightbox_rarrow.onclick = () => {
 				active_slide = (active_slide + 1) % image_list.length
 				lightbox_image.src = image_list[active_slide]
@@ -98,33 +98,36 @@ export default class LiteGallery extends Plugin {
 			lightbox.appendChild(lightbox_rarrow)
 
 			// Create the image element for the lightbox
-			const lightbox_image = document.createElement('img')
-			lightbox_image.classList.add('litegal-lightbox-image')
+			const lightbox_image = document.createEl('img', {
+				cls: 'litegal-lightbox-image',
+			})
 			lightbox.appendChild(lightbox_image)
 
 			// Create the exit element for the lightbox and handle click event to close the lightbox
-			const lightbox_exit = document.createElement('div')
-			lightbox_exit.classList.add('litegal-lightbox-exit')
-			lightbox_exit.innerHTML = '&times;'
+			const lightbox_exit = document.createEl('div', {
+				text: '&times;',
+				cls: 'litegal-lightbox-exit'
+			})
 			lightbox_exit.onclick = () => {
-				lightbox_container.style.display = 'none'
+				lightbox_container.addClass('hidden')
 			}
 			lightbox.appendChild(lightbox_exit)
 
 			// Close the lightbox when pressing the escape key
 			document.addEventListener('keydown', (event) => {
 				if (event.key === 'Escape') {
-					lightbox_container.style.display = 'none'
+					lightbox_container.addClass('hidden')
 				}
 			})
 
 			// Create the gallery container
-			const gallery = document.createElement('div')
+			const gallery = document.createEl('div', { cls: 'litegal' })
 			gallery.classList.add('litegal')
 
 			// Create the container for the active image
-			const active_image_container = document.createElement('div')
-			active_image_container.classList.add('litegal-active')
+			const active_image_container = document.createEl('div', {
+				cls: 'litegal-active'
+			})
 			gallery.appendChild(active_image_container)
 
 			// Create the active image element and set its source to the first image in the list
@@ -133,14 +136,15 @@ export default class LiteGallery extends Plugin {
 			active_image_container.appendChild(active_image)
 
 			active_image.onclick = () => {
-				lightbox_container.style.display = 'block'
+				lightbox_container.removeClass('hidden')
 				lightbox_image.src = image_list[active_slide]
 			}
 
 			// Create the left arrow element and handle click event to navigate to the previous image
-			const larrow = document.createElement('div')
-			larrow.classList.add('litegal-arrow')
-			larrow.classList.add('litegal-arrow-left')
+			const larrow = document.createEl('div', {
+				text: '&lt;',
+				cls: 'litegal-arrow litegal-arrow-left'
+			})
 			larrow.innerHTML = '&lt;'
 			larrow.onclick = () => {
 				active_slide = (active_slide - 1 + image_list.length) % image_list.length
@@ -149,10 +153,10 @@ export default class LiteGallery extends Plugin {
 			active_image_container.appendChild(larrow)
 
 			// Create the right arrow element and handle click event to navigate to the next image
-			const rarrow = document.createElement('div')
-			rarrow.classList.add('litegal-arrow')
-			rarrow.classList.add('litegal-arrow-right')
-			rarrow.innerHTML = '&gt;'
+			const rarrow = document.createEl('div', {
+				text: '&gt;',
+				cls: 'litegal-arrow litegal-arrow-right'
+			})
 			rarrow.onclick = () => {
 				active_slide = (active_slide + 1) % image_list.length
 				active_image.src = image_list[active_slide]
@@ -160,15 +164,14 @@ export default class LiteGallery extends Plugin {
 			active_image_container.appendChild(rarrow)
 
 			// Create the container for the preview section
-			const preview_outer_container = document.createElement('div')
-			preview_outer_container.classList.add('litegal-preview-outer')
+			const preview_outer_container = document.createEl('div', { cls: 'litegal-preview-outer' })
 			gallery.appendChild(preview_outer_container)
 
 			// Create the left arrow element for preview scrolling and handle mouse events to control scroll speed
-			const preview_larrow = document.createElement('div')
-			preview_larrow.classList.add('litegal-arrow')
-			preview_larrow.classList.add('litegal-arrow-left')
-			preview_larrow.innerHTML = '&lt;'
+			const preview_larrow = document.createEl('div', {
+				text: '&lt;',
+				cls: 'litegal-arrow litegal-arrow-left'
+			})
 			preview_larrow.onmouseenter = () => {
 				preview_scroll_speed = -5
 			}
@@ -178,10 +181,10 @@ export default class LiteGallery extends Plugin {
 			preview_outer_container.appendChild(preview_larrow)
 
 			// Create the right arrow element for preview scrolling and handle mouse events to control scroll speed
-			const preview_rarrow = document.createElement('div')
-			preview_rarrow.classList.add('litegal-arrow')
-			preview_rarrow.classList.add('litegal-arrow-right')
-			preview_rarrow.innerHTML = '&gt;'
+			const preview_rarrow = document.createEl('div', {
+				text: '&gt;',
+				cls: 'litegal-arrow litegal-arrow-right'
+			})
 			preview_rarrow.onmouseenter = () => {
 				preview_scroll_speed = 5
 			}
@@ -191,8 +194,9 @@ export default class LiteGallery extends Plugin {
 			preview_outer_container.appendChild(preview_rarrow)
 
 			// Create the container for the preview images
-			const preview_container = document.createElement('div')
-			preview_container.classList.add('litegal-preview')
+			const preview_container = document.createEl('div', {
+				cls: 'litegal-preview'
+			})
 			preview_outer_container.appendChild(preview_container)
 			
 			// Set up interval to continuously scroll the preview images based on the scroll speed
@@ -203,9 +207,10 @@ export default class LiteGallery extends Plugin {
 			// Iterate over the image list and create preview elements for each image
 			image_list.forEach(async (image_path: string, i) => {				
 				// Create the preview image element and set its source to the corresponding image in the list
-				const preview_elem = document.createElement('img')
+				const preview_elem = document.createEl('img', {
+					cls: 'litegal-preview-img'
+				})
 				preview_elem.src = image_path
-				preview_elem.classList.add('litegal-preview-img')
 				
 				// Handle click event to set the active slide and update the active image
 				preview_elem.onclick = () => {

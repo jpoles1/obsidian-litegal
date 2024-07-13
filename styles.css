@@ -96,3 +96,7 @@ If your plugin does not need CSS, delete this file.
     cursor: pointer;
     user-select: none;
 }
+
+.hidden {
+    display: none;
+}
