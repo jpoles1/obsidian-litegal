@@ -15,7 +15,7 @@ export class LiteGallerySettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
-      .setName("Image Folders")
+      .setName("Image folders")
       .setDesc("Comma separated list of folders to search for images (in order of priority).")
       .addText((text) =>
         text

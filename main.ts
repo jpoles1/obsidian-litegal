@@ -1,6 +1,5 @@
-import { Component, MarkdownPostProcessor, MarkdownRenderer, Plugin, Notice } from 'obsidian'
+import { Plugin, Notice, TFile } from 'obsidian'
 import { LiteGallerySettingTab } from './settingtab'
-import { exists } from 'fs';
 
 interface LiteGallerySettings {
 	image_folders: string[];
@@ -32,17 +31,17 @@ export default class LiteGallery extends Plugin {
 			let preview_scroll_speed = 0;
 			
 			// Split the source into lines, remove brackets and whitespace, and filter out empty lines
-			const image_list = (await Promise.all(
-				source.split('\n')
+			const image_list = source.split('\n')
 				.map((line) => line.replace("[[", "").replace("]]", "").trim())
 				.filter((line) => line)
-				.map(async (image) => {
+				.map((image) => {
 					// Check if the image exists in any of the folders specified in settings and return the path if it does, otherwise return undefined
 					let image_exists = false
 					let image_path = undefined
 					let path_options = this.settings.image_folders.map ((folder) => { return `${folder}/${image}` })
 					for (const test_path of path_options) {
-						if (await this.app.vault.adapter.exists(test_path)) {
+						const file = this.app.vault.getAbstractFileByPath(test_path);
+						if (file instanceof TFile) {
 							image_exists = true
 							image_path = this.app.vault.adapter.getResourcePath(test_path)
 							break
@@ -55,7 +54,7 @@ export default class LiteGallery extends Plugin {
 					}
 					return image_path
 				}
-			))).filter((image_path) => image_path !== undefined) as string[]
+			).filter((image_path) => image_path !== undefined) as string[]
 		
 			// Create the lightbox container
 			const lightbox_container = document.createElement('div')
@@ -145,7 +144,6 @@ export default class LiteGallery extends Plugin {
 				text: '&lt;',
 				cls: 'litegal-arrow litegal-arrow-left'
 			})
-			larrow.innerHTML = '&lt;'
 			larrow.onclick = () => {
 				active_slide = (active_slide - 1 + image_list.length) % image_list.length
 				active_image.src = image_list[active_slide]
