@@ -33,7 +33,7 @@ export default class LiteGallery extends Plugin {
 			
 			// Split the source into lines, remove brackets and whitespace, and filter out empty lines
 			const image_list = source.split('\n')
-				.map((line) => line.replace("[[", "").replace("]]", "").trim())
+				.map((line) => line.replace(/!?\[\[/, "").replace("]]", "").trim())
 				.filter((line) => line)
 				.map((image) => {
 					// Check if the image exists in any of the folders specified in settings and return the path if it does, otherwise return undefined
@@ -58,7 +58,7 @@ export default class LiteGallery extends Plugin {
 					return image_path
 				}
 			).filter((image_path) => image_path !== undefined) as string[]
-		
+
 			// Create the lightbox container
 			let lightbox_container = document.querySelector('.litegal-lightbox-container')
 			if (lightbox_container == undefined) { 
@@ -119,98 +119,107 @@ export default class LiteGallery extends Plugin {
 					lightbox_container.addClass('hidden')
 				}
 			})
-
+			
 			// Create the gallery container
 			const gallery = el.createEl('div', { cls: 'litegal' })
 			gallery.classList.add('litegal')
 
-			// Create the container for the active image
-			const active_image_container = gallery.createEl('div', {
-				cls: 'litegal-active'
-			})
-
-			// Create the active image element and set its source to the first image in the list
-			const active_image = active_image_container.createEl('img')
-			active_image.src = image_list[active_slide]
-
-			active_image.onclick = () => {
-				lightbox_container.removeClass('hidden')
-				lightbox_image.src = image_list[active_slide]
-			}
-
-			// Create the left arrow element and handle click event to navigate to the previous image
-			const larrow = active_image_container.createEl('div', {
-				text: '<',
-				cls: 'litegal-arrow litegal-arrow-left'
-			})
-			larrow.onclick = () => {
-				active_slide = (active_slide - 1 + image_list.length) % image_list.length
-				active_image.src = image_list[active_slide]
-			}
-
-			// Create the right arrow element and handle click event to navigate to the next image
-			const rarrow = active_image_container.createEl('div', {
-				text: '>',
-				cls: 'litegal-arrow litegal-arrow-right'
-			})
-			rarrow.onclick = () => {
-				active_slide = (active_slide + 1) % image_list.length
-				active_image.src = image_list[active_slide]
-			}
-
-			// Create the container for the preview section
-			const preview_outer_container = gallery.createEl('div', { cls: 'litegal-preview-outer' })
-
-			// Create the left arrow element for preview scrolling and handle mouse events to control scroll speed
-			const preview_larrow = preview_outer_container.createEl('div', {
-				text: '<',
-				cls: 'litegal-arrow litegal-arrow-left'
-			})
-			preview_larrow.onmouseenter = () => {
-				preview_scroll_speed = -5
-			}
-			preview_larrow.onmouseleave = () => {
-				preview_scroll_speed = 0
-			}
-
-			// Create the right arrow element for preview scrolling and handle mouse events to control scroll speed
-			const preview_rarrow = preview_outer_container.createEl('div', {
-				text: '>',
-				cls: 'litegal-arrow litegal-arrow-right'
-			})
-			preview_rarrow.onmouseenter = () => {
-				preview_scroll_speed = 5
-			}
-			preview_rarrow.onmouseleave = () => {
-				preview_scroll_speed = 0
-			}
-
-			// Create the container for the preview images
-			const preview_container = preview_outer_container.createEl('div', {
-				cls: 'litegal-preview'
-			})
-			
-			// Set up interval to continuously scroll the preview images based on the scroll speed
-			setInterval(() => { 
-				preview_container.scrollLeft += preview_scroll_speed
-			}, 10)
-
-			// Iterate over the image list and create preview elements for each image
-			image_list.forEach(async (image_path: string, i) => {				
-				// Create the preview image element and set its source to the corresponding image in the list
-				const preview_elem = preview_container.createEl('img', {
-					cls: 'litegal-preview-img'
+			if (image_list.length > 0) {
+					
+				// Create the container for the active image
+				const active_image_container = gallery.createEl('div', {
+					cls: 'litegal-active'
 				})
-				preview_elem.src = image_path
-				
-				// Handle click event to set the active slide and update the active image
-				preview_elem.onclick = () => {
-					active_slide = i
-					active_image.src = `${image_list[active_slide]}`
+
+				// Create the active image element and set its source to the first image in the list
+				const active_image = active_image_container.createEl('img')
+				active_image.src = image_list[active_slide]
+
+				active_image.onclick = () => {
+					lightbox_container.removeClass('hidden')
+					lightbox_image.src = image_list[active_slide]
 				}
+
+				// Create the left arrow element and handle click event to navigate to the previous image
+				const larrow = active_image_container.createEl('div', {
+					text: '<',
+					cls: 'litegal-arrow litegal-arrow-left'
+				})
+				larrow.onclick = () => {
+					active_slide = (active_slide - 1 + image_list.length) % image_list.length
+					active_image.src = image_list[active_slide]
+				}
+
+				// Create the right arrow element and handle click event to navigate to the next image
+				const rarrow = active_image_container.createEl('div', {
+					text: '>',
+					cls: 'litegal-arrow litegal-arrow-right'
+				})
+				rarrow.onclick = () => {
+					active_slide = (active_slide + 1) % image_list.length
+					active_image.src = image_list[active_slide]
+				}
+
+				// Create the container for the preview section
+				const preview_outer_container = gallery.createEl('div', { cls: 'litegal-preview-outer' })
+
+				// Create the left arrow element for preview scrolling and handle mouse events to control scroll speed
+				const preview_larrow = preview_outer_container.createEl('div', {
+					text: '<',
+					cls: 'litegal-arrow litegal-arrow-left'
+				})
+				preview_larrow.onmouseenter = () => {
+					preview_scroll_speed = -5
+				}
+				preview_larrow.onmouseleave = () => {
+					preview_scroll_speed = 0
+				}
+
+				// Create the right arrow element for preview scrolling and handle mouse events to control scroll speed
+				const preview_rarrow = preview_outer_container.createEl('div', {
+					text: '>',
+					cls: 'litegal-arrow litegal-arrow-right'
+				})
+				preview_rarrow.onmouseenter = () => {
+					preview_scroll_speed = 5
+				}
+				preview_rarrow.onmouseleave = () => {
+					preview_scroll_speed = 0
+				}
+
+				// Create the container for the preview images
+				const preview_container = preview_outer_container.createEl('div', {
+					cls: 'litegal-preview'
+				})
 				
-				// Append the preview element to the preview container
-			})
+				// Set up interval to continuously scroll the preview images based on the scroll speed
+				setInterval(() => { 
+					preview_container.scrollLeft += preview_scroll_speed
+				}, 10)
+
+				// Iterate over the image list and create preview elements for each image
+				image_list.forEach(async (image_path: string, i) => {				
+					// Create the preview image element and set its source to the corresponding image in the list
+					const preview_elem = preview_container.createEl('img', {
+						cls: 'litegal-preview-img'
+					})
+					preview_elem.src = image_path
+					
+					// Handle click event to set the active slide and update the active image
+					preview_elem.onclick = () => {
+						active_slide = i
+						active_image.src = `${image_list[active_slide]}`
+					}
+					
+					// Append the preview element to the preview container
+				})
+			} else {
+				// If no images were found, display a message in the gallery container
+				gallery.createEl('p', {
+					text: 'No images found, please check your image list. If your images are not found, please check your "image folders" in settings.',
+					cls: 'litegal-no-images'
+				})
+			}
 		})
 	}
 

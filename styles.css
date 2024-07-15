@@ -91,3 +91,11 @@
 .hidden {
     display: none;
 }
+
+.litegal-no-images {
+    text-align: center;
+    margin: 20px;
+    color: #999;
+    font-style: italic;
+    
+}
