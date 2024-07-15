@@ -130,9 +130,13 @@ export default class LiteGallery extends Plugin {
 				const active_image_container = gallery.createEl('div', {
 					cls: 'litegal-active'
 				})
+				
+				const active_image_container_inner = active_image_container.createEl('div', {
+					cls: 'litegal-active-inner'
+				})
 
 				// Create the active image element and set its source to the first image in the list
-				const active_image = active_image_container.createEl('img')
+				const active_image = active_image_container_inner.createEl('img')
 				active_image.src = image_list[active_slide]
 
 				active_image.onclick = () => {

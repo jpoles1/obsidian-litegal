@@ -26,6 +26,12 @@
 .litegal-active {
     position: relative;
 }
+
+.litegal-active-inner {
+    display: flex;
+    justify-content: center;
+}
+
 .litegal-arrow {
     cursor: pointer;
     font-size: 30px;
