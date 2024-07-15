@@ -60,12 +60,9 @@ export default class LiteGallery extends Plugin {
 			).filter((image_path) => image_path !== undefined) as string[]
 
 			// Create the lightbox container
-			let lightbox_container = document.querySelector('.litegal-lightbox-container')
-			if (lightbox_container == undefined) { 
-				lightbox_container = document.body.createEl('div', {
-					cls: 'litegal-lightbox-container hidden'
-				})
-			}
+			const lightbox_container = document.body.createEl('div', {
+				cls: 'litegal-lightbox-container hidden'
+			})
 			lightbox_container.onclick = () => {
 				lightbox_container.addClass('hidden') // Hide the lightbox when clicking outside of the image
 			}
@@ -77,49 +74,6 @@ export default class LiteGallery extends Plugin {
 				event.stopPropagation()
 			}
 
-			// Create the left arrow element for the lightbox and handle click event to navigate to the previous
-			const lightbox_larrow = lightbox.createEl('div', { 
-				text: '<', 
-				cls: 'litegal-arrow litegal-arrow-left' 
-			})
-			lightbox_larrow.onclick = () => {
-				active_slide = (active_slide - 1 + image_list.length) % image_list.length
-				lightbox_image.src = image_list[active_slide]
-				active_image.src = image_list[active_slide]
-			}
-
-			// Create the right arrow element for the lightbox and handle click event to navigate to the next
-			const lightbox_rarrow = lightbox.createEl('div', {
-				text: '>',
-				cls: 'litegal-arrow litegal-arrow-right'
-			})
-			lightbox_rarrow.onclick = () => {
-				active_slide = (active_slide + 1) % image_list.length
-				lightbox_image.src = image_list[active_slide]
-				active_image.src = image_list[active_slide]
-			}
-
-			// Create the image element for the lightbox
-			const lightbox_image = lightbox.createEl('img', {
-				cls: 'litegal-lightbox-image',
-			})
-
-			// Create the exit element for the lightbox and handle click event to close the lightbox
-			const lightbox_exit = lightbox.createEl('div', {
-				text: 'X',
-				cls: 'litegal-lightbox-exit'
-			})
-			lightbox_exit.onclick = () => {
-				lightbox_container.addClass('hidden')
-			}
-
-			// Close the lightbox when pressing the escape key
-			document.addEventListener('keydown', (event) => {
-				if (event.key === 'Escape') {
-					lightbox_container.addClass('hidden')
-				}
-			})
-			
 			// Create the gallery container
 			const gallery = el.createEl('div', { cls: 'litegal' })
 			gallery.classList.add('litegal')
@@ -217,6 +171,52 @@ export default class LiteGallery extends Plugin {
 					
 					// Append the preview element to the preview container
 				})
+					
+				// Finish creating the lightbox element
+				
+				// Create the left arrow element for the lightbox and handle click event to navigate to the previous
+				const lightbox_larrow = lightbox.createEl('div', { 
+					text: '<', 
+					cls: 'litegal-arrow litegal-arrow-left' 
+				})
+				lightbox_larrow.onclick = () => {
+					active_slide = (active_slide - 1 + image_list.length) % image_list.length
+					lightbox_image.src = image_list[active_slide]
+					active_image.src = image_list[active_slide]
+				}
+
+				// Create the right arrow element for the lightbox and handle click event to navigate to the next
+				const lightbox_rarrow = lightbox.createEl('div', {
+					text: '>',
+					cls: 'litegal-arrow litegal-arrow-right'
+				})
+				lightbox_rarrow.onclick = () => {
+					active_slide = (active_slide + 1) % image_list.length
+					lightbox_image.src = image_list[active_slide]
+					active_image.src = image_list[active_slide]
+				}
+
+				// Create the image element for the lightbox
+				const lightbox_image = lightbox.createEl('img', {
+					cls: 'litegal-lightbox-image',
+				})
+
+				// Create the exit element for the lightbox and handle click event to close the lightbox
+				const lightbox_exit = lightbox.createEl('div', {
+					text: 'X',
+					cls: 'litegal-lightbox-exit'
+				})
+				lightbox_exit.onclick = () => {
+					lightbox_container.addClass('hidden')
+				}
+
+				// Close the lightbox when pressing the escape key
+				document.addEventListener('keydown', (event) => {
+					if (event.key === 'Escape') {
+						lightbox_container.addClass('hidden')
+					}
+				})
+				
 			} else {
 				// If no images were found, display a message in the gallery container
 				gallery.createEl('p', {
