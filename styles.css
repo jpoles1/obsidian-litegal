@@ -24,6 +24,7 @@
     overflow: hidden;
     cursor: pointer;
     flex-shrink: 0;
+    object-fit: cover;
 }
 
 .litegal-active {
