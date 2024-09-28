@@ -2,9 +2,11 @@
     width: 100%;
     cursor: default;
 }
+
 .litegal-preview-outer {
     position: relative;
 }
+
 .litegal-preview {
     display: flex;
     align-items: space-around;
@@ -23,6 +25,7 @@
     cursor: pointer;
     flex-shrink: 0;
 }
+
 .litegal-active {
     position: relative;
 }
@@ -45,6 +48,7 @@
     transform: translate(0, -50%);
     user-select: none;
 }
+
 .litegal-arrow:hover {
     color: white;
     background-color: rgba(0, 0, 0, 0.6);
@@ -53,6 +57,7 @@
 .litegal-preview-outer .litegal-arrow {
     font-size: 20px;
 }
+
 .litegal-arrow-right {
     right: 0;
 }
@@ -67,6 +72,7 @@
     z-index: 1000;
     cursor: pointer;
 }
+
 .litegal-lightbox {
     position: absolute;
     top: 50%;
