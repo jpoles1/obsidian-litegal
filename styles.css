@@ -19,7 +19,7 @@
     width: 100px;
     height: 100px;
     margin: 10px;
-    border: 1px solid #ccc;
+    border: 2px solid #ccc;
     border-radius: 5px;
     overflow: hidden;
     cursor: pointer;
