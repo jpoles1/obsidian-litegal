@@ -36,6 +36,10 @@ export default class LiteGallery extends Plugin {
 				.map((line) => line.replace(/!?\[\[/, "").replace("]]", "").trim())
 				.filter((line) => line)
 				.map((image) => {
+					// If image is a URL (http/https) or a local file path, return it as is
+					if (image.match(/^(http|https):\/\//)) {
+						return image
+					}
 					// Check if the image exists in any of the folders specified in settings and return the path if it does, otherwise return undefined
 					let image_exists = false
 					let image_path = undefined
@@ -58,7 +62,7 @@ export default class LiteGallery extends Plugin {
 					return image_path
 				}
 			).filter((image_path) => image_path !== undefined) as string[]
-
+			console.log(image_list)
 			// Create the lightbox container
 			const lightbox_container = document.body.createEl('div', {
 				cls: 'litegal-lightbox-container hidden'
