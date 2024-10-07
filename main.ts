@@ -101,7 +101,10 @@ export default class LiteGallery extends Plugin {
 					lightbox_container.removeClass('hidden')
 					lightbox_image.src = image_list[active_slide]
 				}
-
+				active_image.onerror = function() {
+					this.src='https://raw.githubusercontent.com/jpoles1/obsidian-litegal/eb0e30b2709a3081dd8d32ef4371367b95694881/404notfound.jpg'
+				}
+				
 				// Create the left arrow element and handle click event to navigate to the previous image
 				const larrow = active_image_container.createEl('div', {
 					text: '<',
@@ -166,13 +169,15 @@ export default class LiteGallery extends Plugin {
 						cls: 'litegal-preview-img'
 					})
 					preview_elem.src = image_path
+					preview_elem.onerror = function() {
+						this.src='https://raw.githubusercontent.com/jpoles1/obsidian-litegal/eb0e30b2709a3081dd8d32ef4371367b95694881/404notfound.jpg'
+					}
 					
 					// Handle click event to set the active slide and update the active image
 					preview_elem.onclick = () => {
 						active_slide = i
 						active_image.src = `${image_list[active_slide]}`
-					}
-					
+					}					
 					// Append the preview element to the preview container
 				})
 					
@@ -204,6 +209,10 @@ export default class LiteGallery extends Plugin {
 				const lightbox_image = lightbox.createEl('img', {
 					cls: 'litegal-lightbox-image',
 				})
+				lightbox_image.onerror = function() {
+					this.src='https://raw.githubusercontent.com/jpoles1/obsidian-litegal/eb0e30b2709a3081dd8d32ef4371367b95694881/404notfound.jpg'
+				}						
+
 
 				// Create the exit element for the lightbox and handle click event to close the lightbox
 				const lightbox_exit = lightbox.createEl('div', {
