@@ -1,6 +1,6 @@
 {
 	"name": "lightgal",
-	"version": "1.0.0",
+	"version": "1.0.6",
 	"description": "Easily create carousel galleries to better organize/view images in your Obsidian notes.",
 	"main": "main.js",
 	"scripts": {
