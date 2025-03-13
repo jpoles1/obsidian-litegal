@@ -1,31 +1,8 @@
-import { Plugin, Notice, TFile } from 'obsidian'
-import { LiteGallerySettingTab } from './settingtab'
+import { Plugin, Notice, getLinkpath } from 'obsidian'
 import test from 'node:test';
 
-interface LiteGallerySettings {
-	image_folders: string[];
-}
-
-const DEFAULT_SETTINGS: Partial<LiteGallerySettings> = {
-	image_folders: [],
-};
-
 export default class LiteGallery extends Plugin {
-	settings: LiteGallerySettings;
-
-	async load_settings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
-
-	async save_settings() {
-		await this.saveData(this.settings);
-	}
-	
 	async onload () {
-		await this.load_settings();
-
-		this.addSettingTab(new LiteGallerySettingTab(this.app, this));
-
 		this.registerMarkdownCodeBlockProcessor("litegal", async (source, el, ctx) => {
 			// Define variables for tracking the active slide and preview scroll speed
 			let active_slide = 0;
@@ -40,29 +17,16 @@ export default class LiteGallery extends Plugin {
 					if (image.match(/^(http|https):\/\//)) {
 						return image
 					}
-					// Check if the image exists in any of the folders specified in settings and return the path if it does, otherwise return undefined
-					let image_exists = false
-					let image_path = undefined
-					let path_options = this.settings.image_folders.map((folder) => { 
-						return `${(folder.slice(-1) == "/") ? 
-							(folder == "/" ? "" : folder) : // If folder doesn't need a trailing slash, don't add it (if it's root dir should just be empty string)
-							`${folder}/`}${image}` // If folder needs a trailing slash, add it
-					})
-					for (const test_path of path_options) {
-						const file = this.app.vault.getAbstractFileByPath(test_path);
-						if (file instanceof TFile) {
-							image_exists = true
-							image_path = this.app.vault.adapter.getResourcePath(test_path)
-							break
-						}
-					}
-					if (image_path == undefined) {
+					// Get first match for the given image name
+					var linkpath = getLinkpath(image)
+					var image_file = this.app.metadataCache.getFirstLinkpathDest(linkpath, image)
+					if (image_file == null) {
 						new Notice(`LiteGallery: Image not found: ${image}`)
+						return null
 					}
-					return image_path
-				}
-			).filter((image_path) => image_path !== undefined) as string[]
-			console.log(image_list)
+					return this.app.vault.getResourcePath(image_file)
+				})
+				.filter((image_path) => image_path !== null) as string[]
 			// Create the lightbox container
 			const lightbox_container = document.body.createEl('div', {
 				cls: 'litegal-lightbox-container hidden'

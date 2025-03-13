@@ -5,9 +5,7 @@ The Lite Gallery plugin for [Obsidian](https://obsidian.md) makes it easy to cre
 ## How to use
 
 1) [Install the plugin](https://help.obsidian.md/Extending+Obsidian/Community+plugins)
-2) Open up the plugin settings and configure your image directories (separated by commas). In order to make inserting images easier full image paths are not required; the plugin will search through each image directory from your settings list in order, using the first image match it finds: 
-    - For example `/,images,media` will first search the root folder of your vault, then the `images` directory, and finally the `media` directory to search for each image in your gallery.
-3) Create a new gallery in your note using the following "codeblock" format:
+2) Create a new gallery in your note using the following "codeblock" format:
 ```
  ```litegal
 [[image1.jpg]]
@@ -16,6 +14,8 @@ path/to/image3.jpg
  ```
 ```
   - Note that you can use the obsidian file search by entering `[[` in the codeblock; this will not include an absolute path to the file, but as long as the file is in the image directory.
+
+  - If the filename is not unique across the vault, the gallery will choose the best fit. For specifying a file, give the filepath in the link.
 
 ### Demonstration:
 
