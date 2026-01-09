@@ -20,10 +20,9 @@ export class LiteGallerySettingTab extends PluginSettingTab {
       .addText((text) =>
         text
           .setPlaceholder("/")
-          .setValue(this.plugin.settings.setting_value)
+          .setValue(this.plugin.settings.image_folders.join(","))
           .onChange(async (value) => {
-            this.plugin.settings.setting_value = value;
-            this.plugin.settings.image_folders = this.plugin.parse_folder_settings_as_paths(value);
+            this.plugin.settings.image_folders = value.split(",");
             await this.plugin.save_settings();
           })
       );

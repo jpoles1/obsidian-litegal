@@ -1,15 +1,13 @@
-import { Plugin, Notice, TFile, TAbstractFile, TFolder, Vault } from 'obsidian'
+import { Plugin, Notice, TFile } from 'obsidian'
 import { LiteGallerySettingTab } from './settingtab'
 import test from 'node:test';
 
 interface LiteGallerySettings {
 	image_folders: string[];
-	setting_value: string;
 }
 
 const DEFAULT_SETTINGS: Partial<LiteGallerySettings> = {
 	image_folders: [],
-	setting_value: "/",
 };
 
 export default class LiteGallery extends Plugin {
@@ -22,59 +20,11 @@ export default class LiteGallery extends Plugin {
 	async save_settings() {
 		await this.saveData(this.settings);
 	}
-
-	getAllFolders = (vault: Vault): TFolder[] => {
-		return vault.getAllLoadedFiles().filter(f => f instanceof TFolder) as TFolder[];
-	};
-	  
-	parse_folder_settings_as_paths = (settings: string): string[] => {
-		const folders =  settings
-			.split(",")
-			.flatMap(folder => {
-				if (folder === "/*") {
-					// Return all folders in the vault
-					return this.getAllFolders(this.app.vault).map(f => f.path);
-				} else if (folder.startsWith("*/")) {
-					// Match any top-level folder with the given suffix
-					const suffix = folder.substring(2);
-					return this.getAllFolders(this.app.vault)
-						.filter(f => f.path.endsWith(suffix))
-						.map(f => f.path);
-				} else if (folder.endsWith("/*")) {
-					// Return all subfolders (including itself)
-					const prefix = folder.slice(0, -2);
-					return this.getAllFolders(this.app.vault)
-						.filter(f => f.path === prefix || f.path.startsWith(`${prefix}/`))
-						.map(f => f.path);
-				} else if (folder.includes("/*/")) {
-					// Match nested folders with wildcard in between
-					const [prefix, suffix] = folder.split("/*/");
-					return this.getAllFolders(this.app.vault)
-						.filter(f => f.path.startsWith(`${prefix}/`) && f.path.endsWith(suffix))
-						.map(f => f.path);
-				} else {
-					return folder;
-				}
-			})
-			.filter((path): path is string => typeof path === "string")
-			.map((folder) => `${folder.replace(/\/$/, '')}`); // remove trailing slashes
-		return folders;
-	}
-
-	handle_vault_change = (file: TAbstractFile) => {
-		if (file instanceof TFolder) {
-			this.settings.image_folders = this.parse_folder_settings_as_paths(this.settings.setting_value);
-		}
-	};
 	
 	async onload () {
 		await this.load_settings();
 
 		this.addSettingTab(new LiteGallerySettingTab(this.app, this));
-
-		this.registerEvent(this.app.vault.on("create", this.handle_vault_change));
-		this.registerEvent(this.app.vault.on("delete", this.handle_vault_change));
-		this.registerEvent(this.app.vault.on("rename", this.handle_vault_change));
 
 		this.registerMarkdownCodeBlockProcessor("litegal", async (source, el, ctx) => {
 			// Define variables for tracking the active slide and preview scroll speed
@@ -93,7 +43,12 @@ export default class LiteGallery extends Plugin {
 					// Check if the image exists in any of the folders specified in settings and return the path if it does, otherwise return undefined
 					let image_exists = false
 					let image_path = undefined
-					for (const test_path of this.settings.image_folders.map(path => (path ? `${path}/${image}` : image))) {
+					let path_options = this.settings.image_folders.map((folder) => { 
+						return `${(folder.slice(-1) == "/") ? 
+							(folder == "/" ? "" : folder) : // If folder doesn't need a trailing slash, don't add it (if it's root dir should just be empty string)
+							`${folder}/`}${image}` // If folder needs a trailing slash, add it
+					})
+					for (const test_path of path_options) {
 						const file = this.app.vault.getAbstractFileByPath(test_path);
 						if (file instanceof TFile) {
 							image_exists = true
@@ -107,6 +62,7 @@ export default class LiteGallery extends Plugin {
 					return image_path
 				}
 			).filter((image_path) => image_path !== undefined) as string[]
+			console.log(image_list)
 			// Create the lightbox container
 			const lightbox_container = document.body.createEl('div', {
 				cls: 'litegal-lightbox-container hidden'
